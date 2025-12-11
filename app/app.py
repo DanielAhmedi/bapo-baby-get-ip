@@ -14,11 +14,11 @@ def get_db():
     """Простое подключение к БД"""
     try:
         conn = psycopg2.connect(
-            host=os.getenv('POSTGRES_HOST', 'postgres'),
+            host=os.getenv('POSTGRES_HOST', 'postgres-service'),
             dbname=os.getenv('POSTGRES_DB', 'ip_lookup_db'),
             user=os.getenv('POSTGRES_USER', 'postgres'),
             password=os.getenv('POSTGRES_PASSWORD', 'postgres'),
-            port=5432
+            port=5434
         )
         return conn
     except Exception as e:
