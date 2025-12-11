@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Flask приложение
+  ip-app:
+    build: .
+    container_name: ip-lookup-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TYPE=jsonip
+      - PORT=8000
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=ip_lookup_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: ip-app-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ip_lookup_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5433"  # Для подключения с хоста (опционально)
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
