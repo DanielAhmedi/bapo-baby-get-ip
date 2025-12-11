@@ -1,0 +1,36 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: web-ip-service
+  labels:
+    app: ip-lookup
+    component: web
+spec:
+  selector:
+    app: ip-lookup
+    component: web
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  labels:
+    app: ip-lookup
+    component: database
+spec:
+  selector:
+    app: ip-lookup
+    component: database
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5434
+      targetPort: 5432
+  type: NodePort

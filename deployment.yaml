@@ -1,0 +1,112 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-ip-app
+  labels:
+    app: ip-lookup
+    component: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ip-lookup
+      component: web
+  template:
+    metadata:
+      labels:
+        app: ip-lookup
+        component: web
+    spec:
+      containers:
+        - name: web-app
+          image: bapo-laba-3:latest
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: TYPE
+              value: "jsonip"
+            - name: PORT
+              value: "8000"
+            - name: POSTGRES_HOST
+              value: "postgres-service"
+            - name: POSTGRES_DB
+              value: "ip_lookup_db"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-db
+  labels:
+    app: ip-lookup
+    component: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ip-lookup
+      component: database
+  template:
+    metadata:
+      labels:
+        app: ip-lookup
+        component: database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: "ip_lookup_db"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql
+              subPath: postgres
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  labels:
+    app: ip-lookup
+    component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
