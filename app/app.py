@@ -9,7 +9,7 @@ from pathlib import Path
 
 app = Flask(__name__)
 
-# ================== PostgreSQL подключение ==================
+# PostgreSQL подключение
 def get_db():
     """Простое подключение к БД"""
     try:
@@ -25,7 +25,7 @@ def get_db():
         print(f"DB error: {e}")
         return None
 
-# Создаём таблицу при старте
+# Создаём таблицу при старте(дебаг)
 def init_db():
     print('Привет я принт')
     conn = get_db()
@@ -51,7 +51,7 @@ def init_db():
         print('Привет я принт 3')
         conn.close()
 
-# ================== Провайдеры ==================
+#  Провайдеры абстрактно 
 class IPProvider(ABC):
     @abstractmethod
     def get_ip(self) -> str:
@@ -89,7 +89,6 @@ class JsonIpProvider(IPProvider):
         except:
             return None
 
-# ================== Сохранение в БД ==================
 def save_ip_to_db(ip, provider):
     """Сохраняем IP в PostgreSQL"""
     if not ip:
@@ -112,7 +111,7 @@ def save_ip_to_db(ip, provider):
     finally:
         conn.close()
 
-# ================== Flask ==================
+
 PROVIDERS = {
     'ipapi': IpApiProvider(),
     'jsonip': JsonIpProvider()
@@ -168,8 +167,7 @@ def history():
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("SELECT * FROM ip_history ORDER BY timestamp DESC LIMIT 20")
             records = cur.fetchall()
-            
-            # Конвертируем datetime в строки
+
             for record in records:
                 if 'timestamp' in record:
                     record['timestamp'] = record['timestamp'].isoformat()
@@ -193,10 +191,11 @@ def health():
         "timestamp": datetime.now().isoformat()
     })
 
-# ================== Запуск ==================
+
 if __name__ == "__main__":
     # Инициализируем БД при старте
     init_db()
     
     port = int(os.getenv('PORT', 8000))
+
     app.run(host='0.0.0.0', port=port, debug=False)
